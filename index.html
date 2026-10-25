@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cek Nilai Saya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<!--
+CEK NILAI SAYA: Terintegrasi Realtime dengan Cloud Firebase + Panel Admin / Mode Guru.
+Seluruh struktur dan desain tampilan depan (mode murid) dipertahankan 100% sesuai aslinya.
+-->
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#17202e;--mute:#5b6678;--line:#e4e9f0;--soft:#eef2f7;--blue:#2f6fed;--blue-s:#e8f0ff;--green:#1b8f5a;--green-s:#e5f6ed;--amber:#a86500;--amber-s:#fdf3e0;--red:#c03030;--red-s:#fdeaea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root{--bg:#0f141c;--card:#171e29;--ink:#e8edf5;--mute:#9aa6b8;--line:#263041;--soft:#222c3b;--blue:#7aa5ff;--blue-s:#1c2a45;--green:#4cc88a;--green-s:#14302a;--amber:#e8a63a;--amber-s:#33270f;--red:#ff8a8a;--red-s:#3a1c1c}}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.nav{background:var(--card);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:12px;min-height:62px}
+.brand{font-weight:700;color:var(--blue);background:none;border:0;cursor:pointer;font-size:1.05rem;min-height:44px}
+.chip{margin-left:auto;font-size:.85rem;font-weight:500;background:var(--blue-s);color:var(--blue);padding:4px 12px;border-radius:99px}
+main{padding:28px 0 56px}
+.btn{min-height:46px;padding:0 22px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:600}
+.btn.p{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 1px 3px rgba(20,30,50,.05)}
+h1{font-size:clamp(2.2rem,7vw,3.2rem);line-height:1.1;letter-spacing:-.02em;margin:.5em 0 .3em}
+h2{font-size:1.25rem;margin:0 0 4px}
+h1:focus,h2:focus{outline:none}
+.mute{color:var(--mute)}
+.hero{text-align:center;padding:48px 0 24px}
+.hero p{max-width:420px;margin:0 auto 28px;font-size:1.1rem}
+.ico{width:92px;height:92px;border-radius:26px;background:var(--blue-s);color:var(--blue);display:grid;place-items:center;margin:0 auto}
+label{display:block;font-weight:600;margin:20px 0 6px}
+select,input{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.row{display:flex;gap:10px}.row input{flex:1;min-width:0}
+.hint{font-size:.9rem;color:var(--mute);margin:8px 0 0}
+.note{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:12px;margin-top:14px;font-size:.95rem;background:var(--soft)}
+.note.err{background:var(--red-s);color:var(--red)}.note.demo{background:var(--amber-s);color:var(--amber)}
+.note .btn{min-height:40px;padding:0 14px}
+.list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.list button{width:100%;text-align:left;display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;min-height:48px}
+.list button[aria-pressed=true]{border-color:var(--blue);background:var(--blue-s)}
+.grid{display:grid;gap:14px;margin:16px 0}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.total{display:flex;align-items:center;gap:22px;margin-top:16px}
+.ring{width:112px;height:112px;flex:none}
+.big{font-size:2.8rem;font-weight:700;line-height:1.1}
+.val{font-size:1.9rem;font-weight:700;line-height:1.3}
+.sm{font-size:.95rem;font-weight:500;color:var(--mute)}
+.bar{height:8px;border-radius:9px;background:var(--soft);overflow:hidden;margin:8px 0 10px}
+.bar i{display:block;height:100%;border-radius:9px;background:var(--c)}
+.g{--c:var(--green)}.b{--c:var(--blue)}.a{--c:var(--amber)}
+.scroll{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:.95rem;min-width:480px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mute);font-weight:600;font-size:.85rem}
+.spin{width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== GAYA KHUSUS PANEL ADMIN / MODE GURU ===== */
+.adm-foot{text-align:center;padding:12px 20px 36px}
+.adm-trig{font-size:.8rem;padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mute);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.adm-trig:hover{color:var(--blue);border-color:var(--blue)}
+.adm-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block}
+.adm-dot.on{background:var(--green)}
+.adm-dot.err{background:var(--red)}
+.adm-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin:16px 0;border-bottom:1px solid var(--line)}
+.adm-tab{min-height:38px;padding:0 16px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--mute);cursor:pointer;font-weight:600;font-size:.9rem;white-space:nowrap}
+.adm-tab.act{background:var(--blue-s);color:var(--blue);border-color:var(--blue)}
+.adm-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:var(--card);flex-wrap:wrap}
+.adm-actions{display:flex;gap:6px;align-items:center}
+.btn-xs{min-height:32px;padding:0 10px;border-radius:8px;font-size:.82rem;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:600}
+.btn-xs.del{color:var(--red);border-color:var(--red-s);background:var(--red-s)}
+.btn-xs.ed{color:var(--blue);border-color:var(--blue-s);background:var(--blue-s)}
+.adm-grid2{display:grid;gap:12px}
+@media(min-width:560px){.adm-grid2{grid-template-columns:1fr 1fr}}
+.adm-box{background:var(--soft);padding:16px;border-radius:14px;margin-top:14px}
+.adm-badge{font-size:.75rem;padding:2px 8px;border-radius:6px;background:var(--soft);color:var(--mute);font-weight:600}
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <button class="btn" id="back" hidden>Kembali</button>
+  <button class="brand" id="brand">Cek Nilai Saya</button>
+  <span class="chip" id="chip" hidden></span>
+</div></header>
+
+<main class="wrap">
+  <!-- TAMPILAN MURID (100% TIDAK DIUBAH) -->
+  <section id="v-landing" class="hero">
+    <div class="ico" aria-hidden="true"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5v-16"/><path d="m9 11 2 2 4-4"/></svg></div>
+    <h1 id="h-landing" tabindex="-1">Cek Nilai Saya</h1>
+    <p class="mute">Pantau nilai harianmu dengan mudah, kapan saja.</p>
+    <button class="btn p" id="start">Cek Nilai Saya</button>
+    <p class="hint" style="margin-top:20px">Nilai resmi ditetapkan guru dan diambil dari server sekolah.</p>
+  </section>
+
+  <section id="v-cek" hidden>
+    <div class="card">
+      <h2 id="h-cek" tabindex="-1">Lihat nilai harianmu</h2>
+      <p class="mute" style="margin:0">Pilih kelas dan mata pelajaran, lalu verifikasi dirimu.</p>
+      <div id="demo" class="note demo" hidden></div>
+      <label for="kelas">1. Kelas</label>
+      <select id="kelas" disabled><option value="">Memuat kelas…</option></select>
+      <label for="mapel">2. Mata pelajaran</label>
+      <select id="mapel" disabled><option value="">Pilih kelas terlebih dahulu</option></select>
+      <p class="hint" id="hint" aria-live="polite">Silakan pilih kelas terlebih dahulu.</p>
+      <div id="s3" hidden>
+        <label for="q">3. Cari namamu</label>
+        <div class="row"><input id="q" autocomplete="off" placeholder="Ketik minimal 3 huruf"><button class="btn" id="cari">Cari</button></div>
+        <ul class="list" id="hasilCari"></ul>
+        <div id="verif" hidden>
+          <label for="kode">Kode verifikasi</label>
+          <div class="row"><input id="kode" type="password" inputmode="numeric" autocomplete="off"><button class="btn p" id="lihat">Lihat Nilai</button></div>
+        </div>
+      </div>
+      <div id="st"></div>
+    </div>
+  </section>
+
+  <section id="v-hasil" hidden>
+    <h2 id="h-hasil" tabindex="-1">Ringkasan Nilai Harian</h2>
+    <p class="mute" id="sub" style="margin:0"></p>
+    <div id="ringkasan"></div>
+    <div class="card"><h2>Riwayat Nilai Harian</h2><div id="riwayat"></div></div>
+  </section>
+
+  <!-- PANEL LOGIN GURU / ADMIN -->
+  <section id="v-admin-login" hidden>
+    <div class="card" style="max-width:440px;margin:20px auto">
+      <h2 id="h-admin-login" tabindex="-1">Login Mode Guru</h2>
+      <p class="mute" style="margin:0">Masukkan password admin untuk mengelola seluruh data secara realtime di Cloud Firebase.</p>
+      <label for="adm-pass">Password Admin</label>
+      <div class="row">
+        <input id="adm-pass" type="password" placeholder="Masukkan password..." autocomplete="off">
+        <button class="btn p" id="adm-btn-login">Masuk</button>
+      </div>
+      <div id="adm-login-msg"></div>
+    </div>
+  </section>
+
+  <!-- PANEL UTAMA GURU / ADMIN -->
+  <section id="v-admin" hidden>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 id="h-admin" tabindex="-1">Panel Admin / Mode Guru</h2>
+          <p class="mute" style="margin:0;font-size:.9rem">Perubahan tersimpan otomatis & realtime ke Cloud Firebase (<span id="adm-cloud-status">Terhubung</span>)</p>
+        </div>
+        <button class="btn-xs del" id="adm-logout">Keluar Mode Guru</button>
+      </div>
+
+      <div id="adm-notif"></div>
+
+      <div class="adm-tabs" role="tablist">
+        <button class="adm-tab act" data-tab="nilai">1. Input & Edit Nilai</button>
+        <button class="adm-tab" data-tab="siswa">2. Data Siswa & Kode</button>
+        <button class="adm-tab" data-tab="mapel">3. Mata Pelajaran</button>
+        <button class="adm-tab" data-tab="kelas">4. Daftar Kelas</button>
+      </div>
+
+      <!-- TAB 1: KELOLA NILAI -->
+      <div id="tab-nilai" class="adm-pane">
+        <div class="adm-grid2">
+          <div>
+            <label for="an-kelas" style="margin-top:6px">Pilih Kelas</label>
+            <select id="an-kelas"></select>
+          </div>
+          <div>
+            <label for="an-mapel" style="margin-top:6px">Pilih Mata Pelajaran</label>
+            <select id="an-mapel"></select>
+          </div>
+        </div>
+        <label for="an-siswa" style="margin-top:12px">Pilih Siswa</label>
+        <select id="an-siswa"></select>
+
+        <div id="an-editor" hidden>
+          <div class="adm-box">
+            <h3 style="margin:0 0 10px;font-size:1.05rem" id="an-form-title">Tambah / Edit Sesi Nilai</h3>
+            <input type="hidden" id="an-idx" value="-1">
+            <div class="adm-grid2">
+              <div>
+                <label for="an-tgl" style="margin-top:4px">Tanggal Sesi</label>
+                <input type="date" id="an-tgl">
+              </div>
+              <div>
+                <label for="an-h" style="margin-top:4px">Nilai Kehadiran (Maks 80)</label>
+                <input type="number" id="an-h" min="0" max="80" placeholder="Contoh: 80">
+              </div>
+            </div>
+            <label for="an-kh" style="margin-top:10px">Keterangan Kehadiran</label>
+            <input type="text" id="an-kh" placeholder="Contoh: Hadir tepat waktu">
+            <div class="adm-grid2">
+              <div>
+                <label for="an-t" style="margin-top:10px">Nilai Tes Harian (1–10, kosongkan jika belum)</label>
+                <input type="number" id="an-t" min="0" max="10" placeholder="Kosong = belum ada">
+              </div>
+              <div>
+                <label for="an-x" style="margin-top:10px">Nilai Tambahan (Maks 10, opsional)</label>
+                <input type="number" id="an-x" min="0" max="10" placeholder="Kosong = belum ada">
+              </div>
+            </div>
+            <div class="row" style="margin-top:14px">
+              <button class="btn p" id="an-save">Simpan Nilai ke Cloud</button>
+              <button class="btn" id="an-cancel" hidden>Batal Edit</button>
+            </div>
+          </div>
+
+          <h3 style="margin:20px 0 8px;font-size:1.05rem">Riwayat Sesi Siswa Ini</h3>
+          <div id="an-list"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: KELOLA SISWA -->
+      <div id="tab-siswa" class="adm-pane" hidden>
+        <label for="as-kelas-filter" style="margin-top:6px">Filter Kelas</label>
+        <select id="as-kelas-filter"></select>
+
+        <div class="adm-box">
+          <h3 style="margin:0 0 8px;font-size:1.05rem" id="as-form-title">Tambah Siswa Baru</h3>
+          <input type="hidden" id="as-id" value="">
+          <div class="adm-grid2">
+            <div>
+              <label for="as-nama" style="margin-top:4px">Nama Lengkap Siswa</label>
+              <input type="text" id="as-nama" placeholder="Contoh: Aisyah Putri Rahma">
+            </div>
+            <div>
+              <label for="as-nis" style="margin-top:4px">Nomor Induk Siswa (NIS)</label>
+              <input type="text" id="as-nis" placeholder="Contoh: 2024010123">
+            </div>
+          </div>
+          <div class="adm-grid2">
+            <div>
+              <label for="as-kelas" style="margin-top:10px">Kelas</label>
+              <select id="as-kelas"></select>
+            </div>
+            <div>
+              <label for="as-kode" style="margin-top:10px">Kode Verifikasi Siswa (PIN)</label>
+              <input type="text" id="as-kode" placeholder="Contoh: 1234">
+            </div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn p" id="as-save">Simpan Siswa</button>
+            <button class="btn" id="as-cancel" hidden>Batal Edit</button>
+          </div>
+        </div>
+
+        <h3 style="margin:20px 0 8px;font-size:1.05rem">Daftar Siswa</h3>
+        <div id="as-list"></div>
+      </div>
+
+      <!-- TAB 3: KELOLA MAPEL -->
+      <div id="tab-mapel" class="adm-pane" hidden>
+        <label for="am-kelas" style="margin-top:6px">Pilih Kelas untuk Dikelola Mata Pelajarannya</label>
+        <select id="am-kelas"></select>
+
+        <div class="adm-box">
+          <h3 style="margin:0 0 8px;font-size:1.05rem" id="am-form-title">Tambah Mata Pelajaran</h3>
+          <input type="hidden" id="am-edit-id" value="">
+          <div class="adm-grid2">
+            <div>
+              <label for="am-id" style="margin-top:4px">Kode Singkat Mapel (ID)</label>
+              <input type="text" id="am-id" placeholder="Contoh: bind / mtk / info">
+            </div>
+            <div>
+              <label for="am-nama" style="margin-top:4px">Nama Mata Pelajaran</label>
+              <input type="text" id="am-nama" placeholder="Contoh: Bahasa Indonesia">
+            </div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn p" id="am-save">Simpan Mata Pelajaran</button>
+            <button class="btn" id="am-cancel" hidden>Batal Edit</button>
+          </div>
+        </div>
+
+        <h3 style="margin:20px 0 8px;font-size:1.05rem">Daftar Mata Pelajaran di Kelas Ini</h3>
+        <div id="am-list"></div>
+      </div>
+
+      <!-- TAB 4: KELOLA KELAS -->
+      <div id="tab-kelas" class="adm-pane" hidden>
+        <div class="adm-box">
+          <h3 style="margin:0 0 8px;font-size:1.05rem" id="ak-form-title">Tambah Kelas Baru</h3>
+          <input type="hidden" id="ak-edit-id" value="">
+          <div class="adm-grid2">
+            <div>
+              <label for="ak-id" style="margin-top:4px">Kode Kelas (ID unik, huruf kecil)</label>
+              <input type="text" id="ak-id" placeholder="Contoh: x-a / xi-ipa-1">
+            </div>
+            <div>
+              <label for="ak-nama" style="margin-top:4px">Nama Tampilan Kelas</label>
+              <input type="text" id="ak-nama" placeholder="Contoh: X-A">
+            </div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn p" id="ak-save">Simpan Kelas</button>
+            <button class="btn" id="ak-cancel" hidden>Batal Edit</button>
+          </div>
+        </div>
+
+        <h3 style="margin:20px 0 8px;font-size:1.05rem">Daftar Kelas Aktif</h3>
+        <div id="ak-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- TOMBOL KECIL DI BAWAH UNTUK MASUK KE MODE GURU / PANEL ADMIN -->
+<footer class="adm-foot">
+  <button class="adm-trig" id="btn-mode-guru" title="Masuk ke Panel Admin / Mode Guru">
+    <span class="adm-dot" id="cloud-dot"></span>
+    <span>Mode Guru / Admin</span>
+  </button>
+</footer>
+
+<script type="module">
+/* ===== INTEGRASI CLOUD FIREBASE REALTIME ===== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getDatabase, ref as dbRef, get as dbGet, set as dbSet, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+// Konfigurasi Firebase milik pengguna
+const firebaseConfig = {
+  apiKey: "AIzaSyDwoERXVH7rAQMyErIcmf76VwmrUOj0D-E",
+  authDomain: "cek-nilai-siswa-753e4.firebaseapp.com",
+  projectId: "cek-nilai-siswa-753e4",
+   databaseURL: "https://cek-nilai-siswa-753e4-default-rtdb.firebaseio.com",
+  storageBucket: "cek-nilai-siswa-753e4.firebasestorage.app",
+  messagingSenderId: "8196030519",
+  appId: "1:8196030519:web:22071e7f44c0d5e49fbfb2"
+};
+
+const app = initializeApp(firebaseConfig);
+const fsDb = getFirestore(app);
+const STATE_DOC = doc(fsDb, "sekolah", "data_utama");
+
+/* ===== DATA AWAL (Digunakan untuk menginisialisasi Cloud Firebase jika database masih kosong) ===== */
+const INITIAL_DB = {
+  kelas:[{id:'x-a',nama:'X-A'},{id:'x-b',nama:'X-B'}],
+  mapel:{'x-a':[{id:'bind',nama:'Bahasa Indonesia'},{id:'info',nama:'Informatika'}],
+         'x-b':[{id:'bind',nama:'Bahasa Indonesia'},{id:'info',nama:'Informatika'}]},
+  siswa:[
+    {id:'s101',nama:'Aisyah Putri Rahma',nis:'2024010123',kelas:'x-a',kode:'1234'},
+    {id:'s102',nama:'Muhammad Fauzan',nis:'2024010124',kelas:'x-a',kode:'1234'},
+    {id:'s103',nama:'Muhammad Fauzan',nis:'2024010257',kelas:'x-a',kode:'5678'},
+    {id:'s201',nama:'Nur Hidayah',nis:'2024020311',kelas:'x-b',kode:'1234'}],
+  nilai:{
+    's101|info':[{tgl:'2026-10-05',h:80,kh:'Hadir tepat waktu',t:8,x:7},{tgl:'2026-10-12',h:75,kh:'Hadir setelah sekitar setengah jam',t:9,x:5},{tgl:'2026-10-19',h:80,kh:'Hadir tepat waktu',t:10,x:10}],
+    's101|bind':[{tgl:'2026-10-06',h:80,kh:'Hadir tepat waktu',t:7,x:null}],
+    's102|info':[{tgl:'2026-10-05',h:70,kh:'Hanya hadir sebentar',t:6,x:3},{tgl:'2026-10-12',h:80,kh:'Hadir tepat waktu',t:null,x:null}],
+    's201|info':[{tgl:'2026-10-07',h:65,kh:'Meninggalkan pelajaran tanpa izin',t:8,x:4}]
+  }
+};
+
+// State aplikasi yang disinkronkan langsung dari Cloud Firebase (tidak disimpan di localStorage)
+let DB = JSON.parse(JSON.stringify(INITIAL_DB));
+let cloudMode = 'connecting'; // 'firestore' | 'rtdb' | 'error'
+let rtdbInstance = null;
+let cloudReadyResolve;
+const cloudReadyPromise = new Promise(r => { cloudReadyResolve = r; });
+
+function setCloudStatus(ok, label) {
+  const dot = document.getElementById('cloud-dot');
+  const st = document.getElementById('adm-cloud-status');
+  if (dot) dot.className = 'adm-dot ' + (ok ? 'on' : 'err');
+  if (st) st.textContent = label;
+}
+
+function applyIncomingCloudData(data) {
+  if (!data) return;
+  DB.kelas = Array.isArray(data.kelas) ? data.kelas : [];
+  DB.mapel = data.mapel && typeof data.mapel === 'object' ? data.mapel : {};
+  DB.siswa = Array.isArray(data.siswa) ? data.siswa : [];
+  DB.nilai = data.nilai && typeof data.nilai === 'object' ? data.nilai : {};
+  onRealtimeUpdate();
+}
+
+// Hubungkan ke Cloud Firestore secara Realtime (dengan fallback otomatis ke Firebase Realtime Database jika pengguna menyalakan RTDB)
+async function initCloudConnection() {
+  try {
+    const snap = await getDoc(STATE_DOC);
+    if (!snap.exists()) {
+      await setDoc(STATE_DOC, DB);
+    } else {
+      applyIncomingCloudData(snap.data());
+    }
+    cloudMode = 'firestore';
+    setCloudStatus(true, 'Cloud Firestore Realtime Aktif');
+    cloudReadyResolve();
+
+    onSnapshot(STATE_DOC, (docSnap) => {
+      if (docSnap.exists()) {
+        applyIncomingCloudData(docSnap.data());
+        setCloudStatus(true, 'Cloud Firestore Realtime Aktif');
+      }
+    }, (err) => {
+      console.error("Firestore Listener Error:", err);
+      setCloudStatus(false, 'Gangguan Koneksi Cloud');
+    });
+  } catch (fsErr) {
+    console.warn("Firestore gagal diakses, mencoba Firebase Realtime Database...", fsErr);
+    try {
+      rtdbInstance = getDatabase(app);
+      const rootRef = dbRef(rtdbInstance, 'sekolah/data_utama');
+      const rtSnap = await dbGet(rootRef);
+      if (!rtSnap.exists()) {
+        await dbSet(rootRef, DB);
+      } else {
+        applyIncomingCloudData(rtSnap.val());
+      }
+      cloudMode = 'rtdb';
+      setCloudStatus(true, 'Realtime Database Aktif');
+      cloudReadyResolve();
+
+      onValue(rootRef, (s) => {
+        if (s.exists()) {
+          applyIncomingCloudData(s.val());
+          setCloudStatus(true, 'Realtime Database Aktif');
+        }
+      });
+    } catch (rtErr) {
+      console.error("Koneksi Firebase gagal:", rtErr);
+      cloudMode = 'error';
+      setCloudStatus(false, 'Periksa Rules Firebase (Firestore/RTDB)');
+      cloudReadyResolve();
+    }
+  }
+}
+
+async function saveToCloud() {
+  if (cloudMode === 'firestore') {
+    await setDoc(STATE_DOC, DB);
+  } else if (cloudMode === 'rtdb' && rtdbInstance) {
+    const rootRef = dbRef(rtdbInstance, 'sekolah/data_utama');
+    await dbSet(rootRef, DB);
+  } else {
+    await setDoc(STATE_DOC, DB);
+    cloudMode = 'firestore';
+    setCloudStatus(true, 'Cloud Firestore Realtime Aktif');
+  }
+}
+
+initCloudConnection();
+
+/* ===== KONFIGURASI API FRONTEND MURID ===== */
+const CONFIG={
+  USE_MOCK:false, // Diubah ke false karena sudah terhubung ke Cloud Firebase resmi
+  API_BASE_URL:''
+};
+let authToken=null; // hanya di memori; tidak disimpan di localStorage
+class ApiError extends Error{constructor(code){super(code);this.code=code}}
+
+const FirebaseCloudApi={
+  async go(){
+    await cloudReadyPromise;
+    if(new URLSearchParams(location.search).get('simulasi')==='error')throw new ApiError('network');
+  },
+  async getKelas(){await this.go();return DB.kelas},
+  async getMapel(k){await this.go();return DB.mapel[k]||[]},
+  async cariSiswa(k,q){await this.go();q=q.toLowerCase();
+    return DB.siswa.filter(s=>s.kelas===k&&s.nama.toLowerCase().includes(q)).map(s=>({id:s.id,nama:s.nama,nisSamar:'NIS •••• '+String(s.nis||'').slice(-4)}))},
+  async verifikasi(id,kode){await this.go();const s=DB.siswa.find(x=>x.id===id);
+    if(!s||String(s.kode)!==String(kode))throw new ApiError('auth');authToken='cloud-'+id},
+  sesi(m){const id=(authToken||'').replace('cloud-','');if(!id)throw new ApiError('auth');
+    return (DB.nilai[id+'|'+m]||[]).map(r=>({tanggal:r.tgl,kehadiran:r.h,ketKehadiran:r.kh,tes:r.t,tambahan:r.x,
+      total:r.t==null?null:Math.min(100,Number(r.h||0)+Number(r.t||0)+Number(r.x||0))}))},
+  async getRiwayat(k,m){await this.go();return this.sesi(m)},
+  async getRingkasan(k,m){await this.go();const r=this.sesi(m);
+    return r.length?{...r[r.length-1],maks:{kehadiran:80,tes:10,tambahan:10}}:null}
+};
+const api=FirebaseCloudApi;
+
+/* ===== TAMPILAN MURID (PERTAHANKAN ELEMEN ASLI) ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const S={kelas:null,mapel:null,siswa:null,kn:'',mn:''};
+const PESAN={network:'Terjadi kendala saat mengambil data. Silakan coba kembali.',server:'Server sedang bermasalah. Silakan coba beberapa saat lagi.',auth:'Verifikasi belum berhasil. Periksa kembali kode verifikasimu.',notfound:'Data belum ditemukan.'};
+const fine=e=>PESAN[e&&e.code]||PESAN.server;
+const hint=t=>{$('hint').textContent=t};
+const tone=(v,m)=>v/m>=.85?'g':v/m>=.7?'b':'a';
+const WARNA={g:'green',b:'blue',a:'amber'};
+const tgl=s=>{if(!s)return '-';const d=new Date(s+'T00:00:00');return isNaN(d)?s:d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})};
+
+function note(el,type,text,retry){
+  el.innerHTML=text?`<div class="note ${type}" role="${type==='err'?'alert':'status'}">${type==='load'?'<span class="spin"></span>':''}<span>${esc(text)}</span>${retry?'<button class="btn">Coba lagi</button>':''}</div>`:'';
+  if(retry)el.querySelector('button').onclick=retry;
+}
+function chip(){const c=$('chip');c.hidden=!(S.kn&&S.mn);c.textContent=`Kelas ${S.kn}, ${S.mn}`}
+function view(v){
+  for(const n of['landing','cek','hasil','admin-login','admin']){
+    const el=$('v-'+n);
+    if(el)el.hidden=n!==v;
+  }
+  $('back').hidden=v==='landing';
+  chip();if(v==='landing'||v==='admin'||v==='admin-login')$('chip').hidden=true;
+  const h=$('h-'+v);if(h)h.focus();
+  scrollTo(0,0);
+}
+function reset(full){
+  S.siswa=null;authToken=null;$('kode').value='';$('verif').hidden=true;note($('st'),'');
+  $('ringkasan').innerHTML=$('riwayat').innerHTML='';
+  if(full){$('hasilCari').innerHTML='';$('q').value=''}
+}
+
+let kelasSiap=false;
+async function muatKelas(){
+  note($('st'),'load','Memuat daftar kelas…');
+  try{
+    const d=await api.getKelas();
+    const prev=S.kelas;
+    $('kelas').innerHTML='<option value="">Pilih kelas</option>'+d.map(k=>`<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+    if(prev&&d.some(k=>k.id===prev))$('kelas').value=prev;
+    $('kelas').disabled=false;kelasSiap=true;note($('st'),'');
+  }catch(e){note($('st'),'err',fine(e),muatKelas)}
+}
+
+$('kelas').onchange=e=>{
+  S.kelas=e.target.value;S.mapel=null;S.mn='';S.kn=S.kelas?e.target.selectedOptions[0].text:'';
+  reset(true);$('s3').hidden=true;chip();
+  const m=$('mapel');m.disabled=true;
+  if(!S.kelas){m.innerHTML='<option value="">Pilih kelas terlebih dahulu</option>';hint('Silakan pilih kelas terlebih dahulu.');return}
+  m.innerHTML='<option value="">Memuat…</option>';hint('Memuat mata pelajaran…');
+  const load=async()=>{
+    try{
+      const d=await api.getMapel(S.kelas);
+      m.innerHTML='<option value="">Pilih mata pelajaran</option>'+d.map(x=>`<option value="${esc(x.id)}">${esc(x.nama)}</option>`).join('');
+      m.disabled=false;hint('Pilih mata pelajaran untuk melihat nilai.');note($('st'),'');
+    }catch(err){note($('st'),'err',fine(err),load)}
+  };
+  load();
+};
+$('mapel').onchange=e=>{
+  reset(true);S.mapel=e.target.value;S.mn=S.mapel?e.target.selectedOptions[0].text:'';chip();
+  $('s3').hidden=!S.mapel;
+  hint(S.mapel?'Ketik namamu, pilih dari daftar, lalu masukkan kode verifikasi.':'Pilih mata pelajaran untuk melihat nilai.');
+};
+
+async function cari(){
+  const q=$('q').value.trim(),st=$('st');
+  reset(false);$('hasilCari').innerHTML='';
+  if(q.length<3){note(st,'err','Ketik minimal 3 huruf nama.');return}
+  note(st,'load','Mencari…');
+  try{
+    const d=await api.cariSiswa(S.kelas,q);note(st,'');
+    if(!d.length){note(st,'','Siswa belum ditemukan. Periksa penulisan namamu atau tanyakan kepada gurumu.');return}
+    $('hasilCari').innerHTML=d.map(s=>`<li><button data-id="${esc(s.id)}" aria-pressed="false"><span>${esc(s.nama)}</span><span class="mute">${esc(s.nisSamar)}</span></button></li>`).join('');
+  }catch(e){note(st,'err',fine(e),cari)}
+}
+$('hasilCari').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  S.siswa=b.dataset.id;
+  $('hasilCari').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  note($('st'),'');$('verif').hidden=false;$('kode').focus();
+};
+
+async function lihat(){
+  const st=$('st'),kode=$('kode').value.trim(),btn=$('lihat');
+  if(!S.siswa){note(st,'err','Pilih namamu dari daftar terlebih dahulu.');return}
+  if(!kode){note(st,'err','Masukkan kode verifikasi.');return}
+  btn.disabled=true;note(st,'load','Memverifikasi dan mengambil nilai…');
+  try{
+    await api.verifikasi(S.siswa,kode);
+    const [r,h]=await Promise.all([api.getRingkasan(S.kelas,S.mapel),api.getRiwayat(S.kelas,S.mapel)]);
+    tampil(r,h);note(st,'');view('hasil');
+  }catch(e){note(st,'err',fine(e),e&&e.code==='auth'?null:lihat)}
+  finally{btn.disabled=false;$('kode').value=''}
+}
+
+function tampil(r,h){
+  $('sub').textContent=`Kelas ${S.kn}, ${S.mn}`;
+  const R=$('ringkasan');
+  if(!r){
+    R.innerHTML='<div class="card" style="margin-top:16px"><b>Data nilai belum tersedia.</b><p class="mute" style="margin:6px 0 0">Nilai akan muncul setelah guru menetapkannya.</p></div>';
+  }else{
+    const T=r.total,m=r.maks;
+    const ind=[
+      ['Kehadiran',r.kehadiran,m.kehadiran,r.ketKehadiran||'Nilai kehadiran dari guru','Belum ada'],
+      ['Tes harian',r.tes,m.tes,'Nilai sesi tes terbaru (1–10)','Belum ada nilai'],
+      ['Nilai tambahan',r.tambahan,m.tambahan,'Dari tulisan atau rangkuman yang disahkan guru','Belum ada']];
+    R.innerHTML=`<div class="card total"><svg class="ring" viewBox="0 0 100 100" role="img" aria-label="Total nilai ${T==null?'belum lengkap':esc(T)+' dari 100'}"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--soft)" stroke-width="10"/>${T==null?'':`<circle cx="50" cy="50" r="42" fill="none" stroke="var(--${WARNA[tone(T,100)]})" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Number(T)*2.64} 264" transform="rotate(-90 50 50)"/>`}</svg><div><div class="mute">Total nilai</div><div class="big">${T==null?'—':esc(T)}<span class="sm"> / 100</span></div><div class="mute" style="font-size:.9rem">${T==null?'Menunggu nilai tes dari guru.':'Sesi '+tgl(r.tanggal)+': kehadiran + tes + nilai tambahan'}</div></div></div>
+<div class="grid">${ind.map(([n,v,mx,k,kosong])=>`<div class="card"><div class="mute">${n}</div><div class="val">${v==null?`<span style="font-size:1.05rem">${kosong}</span>`:esc(v)+`<span class="sm"> / ${esc(mx)}</span>`}</div><div class="bar ${v==null?'':tone(v,mx)}"><i style="width:${v==null?0:Math.min(100,Math.round(v/mx*100))}%"></i></div><div class="mute" style="font-size:.9rem">${esc(k)}</div></div>`).join('')}</div>`;
+  }
+  $('riwayat').innerHTML=h&&h.length
+    ?`<div class="scroll" tabindex="0" role="region" aria-label="Tabel riwayat nilai harian"><table><thead><tr><th>Tanggal</th><th>Kehadiran</th><th>Tes</th><th>Tambahan</th><th>Total</th></tr></thead><tbody>${h.slice().reverse().map(x=>`<tr><td>${tgl(x.tanggal)}</td><td>${x.kehadiran==null?'—':esc(x.kehadiran)}</td><td>${x.tes==null?'<span class="mute">Belum ada</span>':esc(x.tes)}</td><td>${x.tambahan==null?'—':esc(x.tambahan)}</td><td><b>${x.total==null?'—':esc(x.total)}</b></td></tr>`).join('')}</tbody></table></div><p class="hint">Setiap baris adalah satu sesi pembelajaran. Nilai antar-sesi tidak dirata-ratakan.</p>`
+    :'<p class="mute">Belum ada riwayat tes.</p>';
+}
+
+// Sinkronisasi langsung apabila murid sedang membuka layar hasil & guru mengubah nilai secara realtime
+async function onRealtimeUpdate(){
+  if(!$('v-cek').hidden){
+    const d=DB.kelas;
+    const curK=$('kelas').value;
+    $('kelas').innerHTML='<option value="">Pilih kelas</option>'+d.map(k=>`<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+    $('kelas').disabled=false;kelasSiap=true;
+    if(curK&&d.some(k=>k.id===curK)){
+      $('kelas').value=curK;
+      const mp=DB.mapel[curK]||[];
+      const curM=$('mapel').value;
+      $('mapel').innerHTML='<option value="">Pilih mata pelajaran</option>'+mp.map(x=>`<option value="${esc(x.id)}">${esc(x.nama)}</option>`).join('');
+      $('mapel').disabled=false;
+      if(curM&&mp.some(x=>x.id===curM))$('mapel').value=curM;
+    }
+  }
+  if(!$('v-hasil').hidden && authToken && S.kelas && S.mapel){
+    try{
+      const [r,h]=await Promise.all([api.getRingkasan(S.kelas,S.mapel),api.getRiwayat(S.kelas,S.mapel)]);
+      tampil(r,h);
+    }catch{}
+  }
+  if(isAdminLoggedIn){
+    renderAdminAll();
+  }
+}
+
+/* ===== EVENT MURID ===== */
+$('start').onclick=()=>{view('cek');muatKelas()};
+$('back').onclick=()=>{
+  if(!$('v-hasil').hidden){reset(true);view('cek')}
+  else{view('landing')}
+};
+$('brand').onclick=()=>{reset(true);view('landing')};
+$('cari').onclick=cari;$('lihat').onclick=lihat;
+$('q').onkeydown=e=>{if(e.key==='Enter')cari()};
+$('kode').onkeydown=e=>{if(e.key==='Enter')lihat()};
+
+/* =========================================================================
+   MODE GURU / PANEL ADMIN (PASSWORD: "12345")
+   ========================================================================= */
+let isAdminLoggedIn = false;
+
+function admMsg(text, isErr=false){
+  const el = $('adm-notif');
+  if(!text){el.innerHTML='';return;}
+  el.innerHTML = `<div class="note ${isErr?'err':''}" style="margin:12px 0">${esc(text)}</div>`;
+  setTimeout(()=>{if(el.innerHTML.includes(esc(text)))el.innerHTML='';}, 4000);
+}
+
+$('btn-mode-guru').onclick = () => {
+  if (isAdminLoggedIn) {
+    renderAdminAll();
+    view('admin');
+  } else {
+    $('adm-pass').value = '';
+    $('adm-login-msg').innerHTML = '';
+    view('admin-login');
+    setTimeout(()=>$('adm-pass').focus(), 50);
+  }
+};
+
+function doAdminLogin(){
+  const p = $('adm-pass').value;
+  if (p === '12345') {
+    isAdminLoggedIn = true;
+    $('adm-pass').value = '';
+    $('adm-login-msg').innerHTML = '';
+    // Default tanggal hari ini di form nilai
+    if(!$('an-tgl').value) $('an-tgl').value = new Date().toISOString().slice(0,10);
+    renderAdminAll();
+    view('admin');
+  } else {
+    note($('adm-login-msg'), 'err', 'Password salah. Gunakan password admin yang benar.');
+  }
+}
+$('adm-btn-login').onclick = doAdminLogin;
+$('adm-pass').onkeydown = e => { if(e.key==='Enter') doAdminLogin(); };
+
+$('adm-logout').onclick = () => {
+  isAdminLoggedIn = false;
+  view('landing');
+};
+
+// Navigasi Tab Admin
+document.querySelectorAll('.adm-tab').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.adm-tab').forEach(b => b.classList.toggle('act', b === btn));
+    const target = btn.dataset.tab;
+    ['nilai','siswa','mapel','kelas'].forEach(t => {
+      $('tab-'+t).hidden = (t !== target);
+    });
+  };
+});
+
+function renderAdminAll(){
+  renderAdminKelas();
+  renderAdminMapel();
+  renderAdminSiswa();
+  renderAdminNilaiSelectors();
+}
+
+/* ----- 4. KELOLA KELAS ----- */
+function renderAdminKelas(){
+  const list = $('ak-list');
+  if(!DB.kelas.length){
+    list.innerHTML = '<p class="mute">Belum ada kelas.</p>';
+    return;
+  }
+  list.innerHTML = DB.kelas.map(k => `
+    <div class="adm-item">
+      <div><b>${esc(k.nama)}</b> <span class="adm-badge">ID: ${esc(k.id)}</span></div>
+      <div class="adm-actions">
+        <button class="btn-xs ed" data-act="ed-kelas" data-id="${esc(k.id)}">Edit</button>
+        <button class="btn-xs del" data-act="del-kelas" data-id="${esc(k.id)}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+$('ak-save').onclick = async () => {
+  const editId = $('ak-edit-id').value;
+  const id = $('ak-id').value.trim().toLowerCase().replace(/\s+/g, '-');
+  const nama = $('ak-nama').value.trim();
+  if(!id || !nama){ admMsg('ID dan Nama Kelas wajib diisi.', true); return; }
+
+  if(editId){
+    const item = DB.kelas.find(k => k.id === editId);
+    if(item) item.nama = nama;
+  } else {
+    if(DB.kelas.some(k => k.id === id)){ admMsg('ID Kelas sudah digunakan.', true); return; }
+    DB.kelas.push({id, nama});
+    if(!DB.mapel[id]) DB.mapel[id] = [];
+  }
+  $('ak-edit-id').value = '';
+  $('ak-id').value = ''; $('ak-id').disabled = false;
+  $('ak-nama').value = '';
+  $('ak-form-title').textContent = 'Tambah Kelas Baru';
+  $('ak-cancel').hidden = true;
+  await saveToCloud();
+  renderAdminAll();
+  admMsg('Data kelas berhasil disimpan ke Cloud Firebase.');
+};
+
+$('ak-cancel').onclick = () => {
+  $('ak-edit-id').value = '';
+  $('ak-id').value = ''; $('ak-id').disabled = false;
+  $('ak-nama').value = '';
+  $('ak-form-title').textContent = 'Tambah Kelas Baru';
+  $('ak-cancel').hidden = true;
+};
+
+$('ak-list').onclick = async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const id = b.dataset.id;
+  if(b.dataset.act === 'ed-kelas'){
+    const k = DB.kelas.find(x => x.id === id); if(!k) return;
+    $('ak-edit-id').value = k.id;
+    $('ak-id').value = k.id; $('ak-id').disabled = true;
+    $('ak-nama').value = k.nama;
+    $('ak-form-title').textContent = 'Edit Kelas ' + k.nama;
+    $('ak-cancel').hidden = false;
+  } else if(b.dataset.act === 'del-kelas'){
+    DB.kelas = DB.kelas.filter(x => x.id !== id);
+    delete DB.mapel[id];
+    await saveToCloud();
+    renderAdminAll();
+    admMsg('Kelas berhasil dihapus.');
+  }
+};
+
+/* ----- 3. KELOLA MATA PELAJARAN ----- */
+function renderAdminMapel(){
+  const sel = $('am-kelas');
+  const prev = sel.value || (DB.kelas[0] && DB.kelas[0].id) || '';
+  sel.innerHTML = DB.kelas.map(k => `<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+  if(prev && DB.kelas.some(k => k.id === prev)) sel.value = prev;
+  renderAdminMapelList();
+}
+
+function renderAdminMapelList(){
+  const k = $('am-kelas').value;
+  const arr = (DB.mapel && DB.mapel[k]) || [];
+  const list = $('am-list');
+  if(!arr.length){
+    list.innerHTML = '<p class="mute">Belum ada mata pelajaran di kelas ini.</p>';
+    return;
+  }
+  list.innerHTML = arr.map(m => `
+    <div class="adm-item">
+      <div><b>${esc(m.nama)}</b> <span class="adm-badge">ID: ${esc(m.id)}</span></div>
+      <div class="adm-actions">
+        <button class="btn-xs ed" data-act="ed-mapel" data-id="${esc(m.id)}">Edit</button>
+        <button class="btn-xs del" data-act="del-mapel" data-id="${esc(m.id)}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+$('am-kelas').onchange = renderAdminMapelList;
+
+$('am-save').onclick = async () => {
+  const k = $('am-kelas').value;
+  if(!k){ admMsg('Pilih kelas terlebih dahulu.', true); return; }
+  const editId = $('am-edit-id').value;
+  const id = $('am-id').value.trim().toLowerCase().replace(/\s+/g, '-');
+  const nama = $('am-nama').value.trim();
+  if(!id || !nama){ admMsg('Kode ID dan Nama Mata Pelajaran wajib diisi.', true); return; }
+  if(!DB.mapel[k]) DB.mapel[k] = [];
+
+  if(editId){
+    const item = DB.mapel[k].find(m => m.id === editId);
+    if(item) item.nama = nama;
+  } else {
+    if(DB.mapel[k].some(m => m.id === id)){ admMsg('ID Mapel sudah ada di kelas ini.', true); return; }
+    DB.mapel[k].push({id, nama});
+  }
+  $('am-edit-id').value = '';
+  $('am-id').value = ''; $('am-id').disabled = false;
+  $('am-nama').value = '';
+  $('am-form-title').textContent = 'Tambah Mata Pelajaran';
+  $('am-cancel').hidden = true;
+  await saveToCloud();
+  renderAdminAll();
+  admMsg('Mata pelajaran disimpan ke Cloud Firebase.');
+};
+
+$('am-cancel').onclick = () => {
+  $('am-edit-id').value = '';
+  $('am-id').value = ''; $('am-id').disabled = false;
+  $('am-nama').value = '';
+  $('am-form-title').textContent = 'Tambah Mata Pelajaran';
+  $('am-cancel').hidden = true;
+};
+
+$('am-list').onclick = async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const k = $('am-kelas').value;
+  const id = b.dataset.id;
+  if(!DB.mapel[k]) return;
+  if(b.dataset.act === 'ed-mapel'){
+    const m = DB.mapel[k].find(x => x.id === id); if(!m) return;
+    $('am-edit-id').value = m.id;
+    $('am-id').value = m.id; $('am-id').disabled = true;
+    $('am-nama').value = m.nama;
+    $('am-form-title').textContent = 'Edit Mata Pelajaran';
+    $('am-cancel').hidden = false;
+  } else if(b.dataset.act === 'del-mapel'){
+    DB.mapel[k] = DB.mapel[k].filter(x => x.id !== id);
+    await saveToCloud();
+    renderAdminAll();
+    admMsg('Mata pelajaran dihapus.');
+  }
+};
+
+/* ----- 2. KELOLA SISWA & KODE VERIFIKASI ----- */
+function renderAdminSiswa(){
+  const kf = $('as-kelas-filter');
+  const prevF = kf.value;
+  kf.innerHTML = '<option value="">Semua Kelas</option>' + DB.kelas.map(k => `<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+  if(prevF && DB.kelas.some(k => k.id === prevF)) kf.value = prevF;
+
+  const ks = $('as-kelas');
+  const prevS = ks.value || (DB.kelas[0] && DB.kelas[0].id) || '';
+  ks.innerHTML = DB.kelas.map(k => `<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+  if(prevS && DB.kelas.some(k => k.id === prevS)) ks.value = prevS;
+
+  renderAdminSiswaList();
+}
+
+function renderAdminSiswaList(){
+  const f = $('as-kelas-filter').value;
+  const arr = DB.siswa.filter(s => !f || s.kelas === f);
+  const list = $('as-list');
+  if(!arr.length){
+    list.innerHTML = '<p class="mute">Belum ada data siswa pada filter ini.</p>';
+    return;
+  }
+  const kMap = Object.fromEntries(DB.kelas.map(k => [k.id, k.nama]));
+  list.innerHTML = arr.map(s => `
+    <div class="adm-item">
+      <div>
+        <b>${esc(s.nama)}</b>
+        <div class="mute" style="font-size:.85rem">Kelas: <b>${esc(kMap[s.kelas]||s.kelas)}</b> • NIS: ${esc(s.nis)} • Kode PIN: <b>${esc(s.kode)}</b></div>
+      </div>
+      <div class="adm-actions">
+        <button class="btn-xs ed" data-act="ed-siswa" data-id="${esc(s.id)}">Edit</button>
+        <button class="btn-xs del" data-act="del-siswa" data-id="${esc(s.id)}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+$('as-kelas-filter').onchange = renderAdminSiswaList;
+
+$('as-save').onclick = async () => {
+  const editId = $('as-id').value;
+  const nama = $('as-nama').value.trim();
+  const nis = $('as-nis').value.trim();
+  const kelas = $('as-kelas').value;
+  const kode = $('as-kode').value.trim();
+  if(!nama || !nis || !kelas || !kode){
+    admMsg('Nama, NIS, Kelas, dan Kode Verifikasi wajib diisi.', true);
+    return;
+  }
+  if(editId){
+    const s = DB.siswa.find(x => x.id === editId);
+    if(s){ s.nama = nama; s.nis = nis; s.kelas = kelas; s.kode = kode; }
+  } else {
+    const newId = 's' + Date.now().toString().slice(-6);
+    DB.siswa.push({id: newId, nama, nis, kelas, kode});
+  }
+  $('as-id').value = '';
+  $('as-nama').value = ''; $('as-nis').value = ''; $('as-kode').value = '';
+  $('as-form-title').textContent = 'Tambah Siswa Baru';
+  $('as-cancel').hidden = true;
+  await saveToCloud();
+  renderAdminAll();
+  admMsg('Data siswa berhasil disimpan ke Cloud Firebase.');
+};
+
+$('as-cancel').onclick = () => {
+  $('as-id').value = '';
+  $('as-nama').value = ''; $('as-nis').value = ''; $('as-kode').value = '';
+  $('as-form-title').textContent = 'Tambah Siswa Baru';
+  $('as-cancel').hidden = true;
+};
+
+$('as-list').onclick = async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const id = b.dataset.id;
+  if(b.dataset.act === 'ed-siswa'){
+    const s = DB.siswa.find(x => x.id === id); if(!s) return;
+    $('as-id').value = s.id;
+    $('as-nama').value = s.nama;
+    $('as-nis').value = s.nis;
+    $('as-kelas').value = s.kelas;
+    $('as-kode').value = s.kode;
+    $('as-form-title').textContent = 'Edit Siswa: ' + s.nama;
+    $('as-cancel').hidden = false;
+  } else if(b.dataset.act === 'del-siswa'){
+    DB.siswa = DB.siswa.filter(x => x.id !== id);
+    Object.keys(DB.nilai).forEach(k => { if(k.startsWith(id+'|')) delete DB.nilai[k]; });
+    await saveToCloud();
+    renderAdminAll();
+    admMsg('Siswa beserta riwayat nilainya telah dihapus.');
+  }
+};
+
+/* ----- 1. KELOLA NILAI HARIAN ----- */
+function renderAdminNilaiSelectors(){
+  const ak = $('an-kelas');
+  const prevK = ak.value || (DB.kelas[0] && DB.kelas[0].id) || '';
+  ak.innerHTML = DB.kelas.map(k => `<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('');
+  if(prevK && DB.kelas.some(k => k.id === prevK)) ak.value = prevK;
+  renderAdminNilaiMapelSiswa();
+}
+
+function renderAdminNilaiMapelSiswa(){
+  const k = $('an-kelas').value;
+  const am = $('an-mapel');
+  const mp = (DB.mapel && DB.mapel[k]) || [];
+  const prevM = am.value;
+  am.innerHTML = mp.length ? mp.map(m => `<option value="${esc(m.id)}">${esc(m.nama)}</option>`).join('') : '<option value="">Belum ada mapel</option>';
+  if(prevM && mp.some(m => m.id === prevM)) am.value = prevM;
+
+  const as = $('an-siswa');
+  const sw = DB.siswa.filter(s => s.kelas === k);
+  const prevS = as.value;
+  as.innerHTML = sw.length ? sw.map(s => `<option value="${esc(s.id)}">${esc(s.nama)} (NIS: ${esc(s.nis)})</option>`).join('') : '<option value="">Belum ada siswa di kelas ini</option>';
+  if(prevS && sw.some(s => s.id === prevS)) as.value = prevS;
+
+  renderAdminNilaiList();
+}
+
+$('an-kelas').onchange = renderAdminNilaiMapelSiswa;
+$('an-mapel').onchange = renderAdminNilaiList;
+$('an-siswa').onchange = renderAdminNilaiList;
+
+function renderAdminNilaiList(){
+  const m = $('an-mapel').value;
+  const s = $('an-siswa').value;
+  const ed = $('an-editor');
+  if(!m || !s){
+    ed.hidden = true;
+    return;
+  }
+  ed.hidden = false;
+  const key = s + '|' + m;
+  const arr = DB.nilai[key] || [];
+  const list = $('an-list');
+  if(!arr.length){
+    list.innerHTML = '<p class="mute">Belum ada sesi nilai untuk siswa & mata pelajaran ini.</p>';
+    return;
+  }
+  list.innerHTML = arr.map((r, idx) => {
+    const tot = r.t == null ? 'Menunggu Tes' : Math.min(100, Number(r.h||0) + Number(r.t||0) + Number(r.x||0));
+    return `
+      <div class="adm-item">
+        <div>
+          <b>${esc(tgl(r.tgl))}</b> — Total: <b>${esc(tot)}</b>
+          <div class="mute" style="font-size:.85rem">
+            Kehadiran: <b>${r.h??'-'}</b> (${esc(r.kh||'-')}) • Tes: <b>${r.t??'Belum'}</b> • Tambahan: <b>${r.x??'-'}</b>
+          </div>
+        </div>
+        <div class="adm-actions">
+          <button class="btn-xs ed" data-act="ed-nilai" data-idx="${idx}">Edit</button>
+          <button class="btn-xs del" data-act="del-nilai" data-idx="${idx}">Hapus</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function resetNilaiForm(){
+  $('an-idx').value = '-1';
+  $('an-tgl').value = new Date().toISOString().slice(0,10);
+  $('an-h').value = '80';
+  $('an-kh').value = 'Hadir tepat waktu';
+  $('an-t').value = '';
+  $('an-x').value = '';
+  $('an-form-title').textContent = 'Tambah Sesi Nilai Baru';
+  $('an-cancel').hidden = true;
+}
+
+$('an-save').onclick = async () => {
+  const m = $('an-mapel').value;
+  const s = $('an-siswa').value;
+  if(!m || !s){ admMsg('Pilih mata pelajaran dan siswa terlebih dahulu.', true); return; }
+
+  const idx = parseInt($('an-idx').value, 10);
+  const tglVal = $('an-tgl').value;
+  const hRaw = $('an-h').value.trim();
+  const khVal = $('an-kh').value.trim() || 'Nilai kehadiran dari guru';
+  const tRaw = $('an-t').value.trim();
+  const xRaw = $('an-x').value.trim();
+
+  if(!tglVal || hRaw === ''){
+    admMsg('Tanggal sesi dan Nilai Kehadiran wajib diisi.', true);
+    return;
+  }
+
+  const entry = {
+    tgl: tglVal,
+    h: Math.min(80, Math.max(0, Number(hRaw))),
+    kh: khVal,
+    t: tRaw === '' ? null : Math.min(10, Math.max(0, Number(tRaw))),
+    x: xRaw === '' ? null : Math.min(10, Math.max(0, Number(xRaw)))
+  };
+
+  const key = s + '|' + m;
+  if(!DB.nilai[key]) DB.nilai[key] = [];
+
+  if(idx >= 0 && idx < DB.nilai[key].length){
+    DB.nilai[key][idx] = entry;
+  } else {
+    DB.nilai[key].push(entry);
+  }
+  // Urutkan berdasarkan tanggal secara kronologis
+  DB.nilai[key].sort((a,b) => String(a.tgl).localeCompare(String(b.tgl)));
+
+  resetNilaiForm();
+  await saveToCloud();
+  renderAdminNilaiList();
+  admMsg('Nilai berhasil disimpan secara realtime ke Cloud Firebase.');
+};
+
+$('an-cancel').onclick = resetNilaiForm;
+
+$('an-list').onclick = async e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const m = $('an-mapel').value;
+  const s = $('an-siswa').value;
+  const key = s + '|' + m;
+  const idx = parseInt(b.dataset.idx, 10);
+  const arr = DB.nilai[key] || [];
+  if(!arr[idx]) return;
+
+  if(b.dataset.act === 'ed-nilai'){
+    const r = arr[idx];
+    $('an-idx').value = String(idx);
+    $('an-tgl').value = r.tgl || '';
+    $('an-h').value = r.h ?? '';
+    $('an-kh').value = r.kh || '';
+    $('an-t').value = r.t ?? '';
+    $('an-x').value = r.x ?? '';
+    $('an-form-title').textContent = 'Edit Sesi Tanggal ' + tgl(r.tgl);
+    $('an-cancel').hidden = false;
+  } else if(b.dataset.act === 'del-nilai'){
+    arr.splice(idx, 1);
+    await saveToCloud();
+    renderAdminNilaiList();
+    admMsg('Sesi nilai berhasil dihapus.');
+  }
+};
+
+// Inisialisasi nilai default form admin
+resetNilaiForm();
+</script>
+</body>
+</html>
